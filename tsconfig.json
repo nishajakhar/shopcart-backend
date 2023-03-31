@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "module": "commonjs" /* Specify what module code is generated. */,
+        "rootDir": "./" /* Specify the root folder within your source files. */,
+        "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables `allowSyntheticDefaultImports` for type compatibility. */,
+        "target": "es2017" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+        "noImplicitAny": true /* Enable error reporting for expressions and declarations with an implied `any` type.. */,
+        "moduleResolution": "node" /* Specify how TypeScript looks up a file from a given module specifier. */,
+        "sourceMap": true /* Create source map files for emitted JavaScript files. */,
+        "outDir": "./dist" /* Specify an output folder for all emitted files. */,
+        "baseUrl": "." /* Specify the base directory to resolve non-relative module names. */,
+        "paths": {
+            /* Specify a set of entries that re-map imports to additional lookup locations. */
+            "*": ["node_modules/*", "types/*"]
+        }
+    },
+    "include": ["./**/*"]
+}
