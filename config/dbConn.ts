@@ -1,25 +1,28 @@
-const mongoose = require('mongoose')
-const { logEvents } = require('../middleware/logger')
+import mongoose, { Error } from 'mongoose'
+import { logEvents } from '../services/logger.service'
 
+interface IError extends Error {
+    no: string
+    code: string
+    syscall: string
+    hostname: string
+}
 class ConnectMongo {
     private dbURI = process.env.DB_URI || ''
-    private options = {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        autoReconnect: true,
-    }
     constructor() {
         this.mongo()
     }
     // Create the database connection
     public connect() {
         mongoose
-            .connect(this.dbURI, this.options)
+            .connect(this.dbURI)
             .then(() => {
                 console.log('Mongoose connection done')
+                return true
             })
             .catch((e: Error) => {
                 console.log('Mongoose connection error', e)
+                return e
             })
     }
 
@@ -31,7 +34,7 @@ class ConnectMongo {
         })
 
         // If the connection throws an error
-        mongoose.connection.on('error', (err: Error) => {
+        mongoose.connection.on('error', (err: IError) => {
             console.log('Mongo Connection ERROR: ' + err)
             logEvents(
                 `${err.no}: ${err.code}\t${err.syscall}\t${err.hostname}`,
@@ -42,16 +45,6 @@ class ConnectMongo {
         // When the connection is disconnected
         mongoose.connection.on('disconnected', () => {
             console.log('Mongoose Connection Disconnected')
-        })
-
-        // If the Node process ends, close the Mongoose connection
-        process.on('SIGINT', () => {
-            mongoose.connection.close(() => {
-                console.log(
-                    'Mongoose default connection disconnected through app termination'
-                )
-                process.exit(0)
-            })
         })
     }
 }

@@ -1,27 +1,30 @@
 require('dotenv').config()
 import cors from 'cors'
-import express from 'express'
+import express, { Request, Response, Express } from 'express'
 import cookieParser from 'cookie-parser'
+import bodyParser from 'body-parser'
 
 import connectMongo from './config/dbConn'
 import { logger } from './middleware/logger'
 import errorHandler from './middleware/errorHandler'
 import corsOptions from './config/corsConfig'
 
-class Server {
-    public app: express.Application
+// import { ProductRoutes } from './routes/productRoutes'
+import { UserRoutes } from './routes/user.route'
+import { AuthRoutes } from './routes/auth.route'
 
+class Server {
     constructor() {
         this.app = express()
         this.config()
         this.routes()
         this.mongoDB()
     }
+    public app: Express
 
     public routes(): void {
-        this.app.use('/', (req: Request, res: Response) => {
-            res.status(200).send({ message: 'Data Fetched Successfully' })
-        })
+        this.app.use('/api/user', new UserRoutes().router)
+        this.app.use('/api/auth', new AuthRoutes().router)
 
         this.app.all('*', (req: Request, res: Response) => {
             res.status(404).send('Error Code : 404 Not Found')
@@ -32,14 +35,14 @@ class Server {
 
     public config(): void {
         this.app.set('port', process.env.PORT || 3500)
+        this.app.use(bodyParser.json())
+        this.app.use(bodyParser.urlencoded({ extended: false }))
+        this.app.use(cookieParser())
         this.app.use(logger)
         this.app.use(cors(corsOptions))
-        this.app.use(express.json())
-        this.app.use(express.urlencoded({ extended: false }))
-        this.app.use(cookieParser())
     }
 
-    private mongoDB() {
+    private mongoDB(): void {
         connectMongo.connect()
     }
 
