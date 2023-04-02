@@ -25,11 +25,13 @@ class Server {
     public routes(): void {
         this.app.use('/api/user', new UserRoutes().router)
         this.app.use('/api/auth', new AuthRoutes().router)
-
         this.app.all('*', (req: Request, res: Response) => {
-            res.status(404).send('Error Code : 404 Not Found')
+            res.status(404).send({
+                code: 'NotFound',
+                status: 404,
+                message: 'Error Code : 404 Not Found',
+            })
         })
-
         this.app.use(errorHandler)
     }
 

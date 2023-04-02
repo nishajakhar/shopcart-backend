@@ -1,17 +1,23 @@
 import { logEvents } from '../services/logger.service'
 import { Request, Response } from 'express'
+import {
+    ErrorException,
+    ErrorCode,
+    ErrorModel,
+} from '../services/error.service'
 
-const errorHandler = (err: any, req: Request, res: Response) => {
-    console.log('I am heere errrr..', err)
+export default function errorHandler(err: any, req: Request, res: Response) {
     logEvents(
         `${err.name}: ${err.message}\t${req.method}\t${req.url}\t${req.headers.origin}`,
         'errLog.log'
     )
-    console.log(err.stack)
 
-    const status: number = res.statusCode ? res.statusCode : 500
-
-    res.status(status).send({ message: err.message, isError: true })
+    if (err instanceof ErrorException)
+        return res.status(err.status).send(err) // Known Error
+    else
+        res.status(500).send({
+            code: ErrorCode.UnknownError,
+            status: 500,
+            message: 'Something went wrong',
+        } as ErrorModel) // For unhandled errors
 }
-
-export default errorHandler
