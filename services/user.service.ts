@@ -12,7 +12,8 @@ export const createUser = async ({
     password: string
     name: string
 }) => {
-    await User.create({ name, email, password })
+    const user = new User({ name, email, password })
+    return await user.save()
 }
 
 export const findUserById = async (id: typeof Schema.Types.ObjectId) =>

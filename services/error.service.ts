@@ -1,9 +1,9 @@
 export class ErrorCode {
-    public static readonly Unauthenticated = 'Unauthenticated'
+    public static readonly Unauthorized = 'Unauthorized'
     public static readonly NotFound = 'NotFound'
-    public static readonly MaximumAllowedGrade = 'MaximumAllowedGrade'
     public static readonly AsyncError = 'AsyncError'
     public static readonly DuplicateError = 'DuplicateError'
+    public static readonly ForbiddenError = 'ForbiddenError'
     public static readonly UnknownError = 'UnknownError'
 }
 
@@ -17,6 +17,7 @@ export class ErrorModel {
 export class ErrorException extends Error {
     public status: number = null
     public metaData: any = null
+    public message: string = ''
     constructor(
         code: string = ErrorCode.UnknownError,
         message: string = 'Something went wrong',
@@ -29,17 +30,17 @@ export class ErrorException extends Error {
         this.metaData = metaData
         this.message = message
         switch (code) {
-            case ErrorCode.Unauthenticated:
+            case ErrorCode.Unauthorized:
                 this.status = 401
-                break
-            case ErrorCode.MaximumAllowedGrade:
-                this.status = 400
                 break
             case ErrorCode.AsyncError:
                 this.status = 400
                 break
             case ErrorCode.DuplicateError:
                 this.status = 409
+                break
+            case ErrorCode.ForbiddenError:
+                this.status = 403
                 break
             case ErrorCode.NotFound:
                 this.status = 404

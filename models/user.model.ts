@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose'
+import { Schema, model, Document, Model } from 'mongoose'
 import bcrypt from 'bcryptjs'
 export interface IUser extends Document {
     name: string
@@ -31,7 +31,7 @@ const userSchema: Schema = new Schema(
             type: String,
             required: true,
         },
-        roles: {
+        role: {
             type: String,
             default: 'User',
         },
@@ -64,6 +64,4 @@ userSchema.methods.hidePassword = function () {
     delete user._id
     return user
 }
-export const User = model<IUser>('User', userSchema)
-
-export default User
+export const User: Model<IUser> = model<IUser>('User', userSchema)

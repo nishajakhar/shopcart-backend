@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express'
-
-import { getUserBySessionToken } from '../db/users'
+import jwt from 'jsonwebtoken'
+import UserService from '../services/user.service'
+import { IUser } from '../models/user.model'
+import { ErrorException, ErrorCode } from '../services/error.service'
 
 export const isAuthenticated = async (
     req: Request,
@@ -8,47 +10,44 @@ export const isAuthenticated = async (
     next: NextFunction
 ) => {
     try {
-        const sessionToken = req.cookies['ANTONIO-AUTH']
+        const authHeader =
+            req.headers.authorization || req.headers.Authorization
 
-        if (!sessionToken) {
-            return res.sendStatus(403)
-        }
+        if (!authHeader?.startsWith('Bearer '))
+            throw new ErrorException(
+                ErrorCode.Unauthorized,
+                'Missing Access Token'
+            )
 
-        const existingUser = await getUserBySessionToken(sessionToken)
+        const token = authHeader.split(' ')[1]
 
-        if (!existingUser) {
-            return res.sendStatus(403)
-        }
+        const data = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET)
 
-        merge(req, { identity: existingUser })
+        if (!data)
+            return res
+                .status(401)
+                .json({ message: 'Token expired. Please login again' })
 
-        return next()
-    } catch (error) {
-        console.log(error)
-        return res.sendStatus(400)
+        req.user = data.email
+        req.role = data.role
+        next()
+    } catch (err) {
+        console.log('I am ere.e..e.e.ee', err)
+        return res.status(500).json({ message: 'Something went wrong' })
     }
 }
 
-export const isOwner = async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
+export const isAdmin = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
 ) => {
-    try {
-        const { id } = req.params
-        const currentUserId = get(req, 'identity._id') as string
-
-        if (!currentUserId) {
-            return res.sendStatus(400)
-        }
-
-        if (currentUserId.toString() !== id) {
-            return res.sendStatus(403)
-        }
-
-        next()
-    } catch (error) {
-        console.log(error)
-        return res.sendStatus(400)
-    }
+    const userFound: IUser = await UserService.findUserByEmail(req.user)
+    console.log('I am user,,,,', req.user, req.role, userFound)
+    if (!userFound)
+        throw new ErrorException(
+            ErrorCode.ForbiddenError,
+            'Access to the resource is only allowed to authorized users'
+        )
+    else next()
 }
