@@ -1,4 +1,4 @@
-const allowedOrigins = ['http://localhost:3000']
+const allowedOrigins = JSON.parse(process.env.CORS_URLS)
 
 const corsOptions = {
     origin: (origin: string, callback: any) => {
